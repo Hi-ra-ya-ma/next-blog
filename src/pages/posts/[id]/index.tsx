@@ -1,4 +1,4 @@
-import { NextPage } from 'next';
+import { GetStaticPaths, NextPage } from 'next';
 
 type Props = {
     title: string;
@@ -15,3 +15,10 @@ const Post: NextPage<Props> = ({ title, content }) => {
 };
 
 export default Post;
+
+export const getStaticPaths: GetStaticPaths = async () => {
+    return {
+        paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+        fallback: false,
+    };
+};
