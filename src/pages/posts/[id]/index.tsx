@@ -1,40 +1,26 @@
-import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
-
-type Props = {
-    title: string;
-    content: string;
-};
-
-const Post: NextPage<Props> = ({ title, content }) => {
-    return (
-        <>
-            <h1>{title}</h1>
-            <p>{content}</p>
-        </>
-    );
-};
-
-export default Post;
+import { GetStaticPaths, GetStaticProps, InferGetStaticPropsType } from 'next';
+import { getPostData, getAllPostIds, Post } from '../../../lib/content-loader';
 
 export const getStaticPaths: GetStaticPaths = async () => {
+    const ids = await getAllPostIds();
     return {
-        paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+        paths: ids.map(id => ({ params: { id } })),
         fallback: false,
     };
 };
 
-const dummyData = {
-    1: {
-        title: 'id1のtitle',
-        content: 'id1のcontext',
-    },
-    2: {
-        title: 'id2のtitle',
-        content: 'id2のcontext',
-    },
+export const getStaticProps: GetStaticProps<Post, { id: string }> = async context => {
+    const data = await getPostData((context.params || {}).id as string);
+    return { props: data };
 };
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-    const props: Props = dummyData[params!.id as '1' | '2'];
-    return { props };
+const PostPage = ({ title, content }: InferGetStaticPropsType<typeof getStaticProps>) => {
+    return (
+        <>
+            <h1>{title}</h1>
+            <div dangerouslySetInnerHTML={{ __html: content }} />
+        </>
+    );
 };
+
+export default PostPage;
